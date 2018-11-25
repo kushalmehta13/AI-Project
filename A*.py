@@ -8,6 +8,7 @@ References:
 
 
 import heapq
+import math
 
 class Node():
     '''
@@ -44,14 +45,17 @@ class Node():
         return self.f < other.f
 
 
-def manhattan_distance(x,y):
-    '''
+# def manhattan_distance(x,y):
+#     '''
+#
+#     :param x: (Integer, Integer). Location of the agent
+#     :param y: (Integer, Integer). Location of the goal state
+#     :return: Manhattan distance between the location of the agent and the goal
+#     '''
+#     return 0
 
-    :param x: (Integer, Integer). Location of the agent
-    :param y: (Integer, Integer). Location of the goal state
-    :return: Manhattan distance between the location of the agent and the goal
-    '''
-    return abs(x[0] - y[0]) + abs(x[1] - y[1])
+
+def calculate_heuristic(curr, mat):
 
 
 def get_relative_neighbors():
@@ -76,6 +80,8 @@ def distance_matrixify(mat):
                 mat[i][j] = 100
             elif mat[i][j] == 's':
                 mat[i][j] = 30
+            elif mat[i][j] == 'w':
+                mat[i][j] = math.inf
     return mat
 
 
@@ -223,8 +229,16 @@ def solve(start, goal, mat):
 
 
 def main():
-   x = solve((1, 0),(2, 2),[['p','p','p'],['p','m','p'],['s','s','s']])
-   print(x)
+    mat = [['w', 'w', 'w', 'w', 'w', 'w', 'w', 'p'],
+           ['m', 'm', 's', 's', 's', 'p', 'p', 'w'],
+           ['s', 's', 'p', 's', 'p', 's', 'm', 'w'],
+           ['p', 'w', 'm', 's', 's', 's', 'w', 'w'],
+           ['w', 'w', 'm', 'w', 'w', 'm', 'p', 'p'],
+           ['w', 'p', 'w', 'w', 's', 'p', 'w', 'm'],
+           ['m', 's', 's', 'w', 'w', 'p', 'p', 'p'],
+           ['s', 's', 'p', 'm', 'm', 'p', 'w', 'w']]
+    x = solve((6, 7),(6, 2), mat)
+    print(x)
 
 if __name__ == '__main__':
     main()
