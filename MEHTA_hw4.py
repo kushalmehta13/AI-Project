@@ -133,7 +133,6 @@ def solve(start, goal, matrix):
     #print(show_exploredmap(len(mat), explored))
 
     reachGoalInObservable(goal, observable)
-    observable
     return path.upper()
 
 def reachGoalInObservable(goal, observable):
@@ -162,14 +161,14 @@ def reachGoalInObservable(goal, observable):
             path += s+f
         else:
             path += f+s
-            
+'''            
 def show_exploredmap(length, explored):
     matrix =[[0 for _ in range(length)] for _ in range(length)]
     for k in explored.keys():
         matrix[k[0]][k[1]] = explored[k]
     for i in range(0,length):
         print(matrix[i])
-
+'''
 
 
 if __name__ == '__main__':
@@ -184,7 +183,5 @@ if __name__ == '__main__':
 
 
 
-    path = solve((0, 0), (7,0), world)
+    path = solve((0, 0), (7,0), mat)
     #path = solve((6, 7), (6,2), mat)
-    
-    print(len(path))
