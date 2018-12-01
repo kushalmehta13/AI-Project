@@ -2,7 +2,8 @@ import os
 import sys
 from argparse import ArgumentParser
 
-from agent import RandomAgent
+# from agent import RandomAgent
+from agent import Dcrawler
 from driver import GameDriver
 
 
@@ -29,7 +30,8 @@ def main(args):
     args = parser.parse_args(args)
 
     # TODO: Change how agents are populated
-    agent = RandomAgent()
+    # agent = RandomAgent()
+    agent = Dcrawler()
 
     game_driver = GameDriver(
         height=args.height, width=args.width,

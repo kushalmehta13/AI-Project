@@ -1,5 +1,5 @@
 # Forging-Path-AI
-#Rishabh Sachdeva, Ajay Pal, Rohan Gujarathi, Kushal Mehta 
+#Rishabh Sachdeva, Ajay Pal, Rohan Gujarathi, Kushal Mehta
 
 import math
 cost_dict = {'w': math.inf, 'm': 100, 'p': 10, 's': 30}
@@ -12,7 +12,7 @@ class Node():
     def __init__(self, parent=None, location=None):
         self.parent = parent
         self.location = location
-        
+
 
 def get_tile(observable, direction):
     return mat[observable[direction][0]][observable[direction][1]]
@@ -106,9 +106,9 @@ def populate_explored(explored, observable):
 
 
 def update_explored(curr, explored):
-    
+
     if deadend(curr,explored):
-        explored[curr.location] = math.inf 
+        explored[curr.location] = math.inf
     #print("inside wpdateExplored for" + str(curr.location))
 
     #updates explored location states. i.e. increments location pointer according to number of visits.
@@ -124,12 +124,12 @@ def solve(start, goal, matrix):
     explored = dict()  # keeping track of what is explored
     explored[start_node.location] = 0
     steps = 0
-    while goal not in observable.values():
-        populate_explored(explored, observable)
-        update_explored(curr, explored)
-        curr = find_next_move(curr, observable, explored)
-        steps += 1
-        observable = surrounding_spaces(curr, len(mat))
+    #while goal not in observable.values():
+    populate_explored(explored, observable)
+    update_explored(curr, explored)
+    curr = find_next_move(curr, observable, explored)
+    steps += 1
+    observable = surrounding_spaces(curr, len(mat))
     #print(show_exploredmap(len(mat), explored))
 
     reachGoalInObservable(goal, observable)
@@ -144,11 +144,11 @@ def reachGoalInObservable(goal, observable):
             if v == goal:
                 direction = k
                 break
-                
+
     if goal in movable_dict.values():
         #in N,S,E,W, i.e. non diagnal
         path+=direction
-        
+
     else:
         #see diagnals only
         f = direction[0]
@@ -161,7 +161,7 @@ def reachGoalInObservable(goal, observable):
             path += s+f
         else:
             path += f+s
-'''            
+'''
 def show_exploredmap(length, explored):
     matrix =[[0 for _ in range(length)] for _ in range(length)]
     for k in explored.keys():
