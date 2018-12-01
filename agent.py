@@ -67,11 +67,7 @@ class RandomAgent(BaseAgent):
         return np.random.choice(list(Directions))
 
 class Dcrawler(BaseAgent):
-    class ExploredStates:
-        def __init__(self, tile, obj, count):
-            self.tile = tile
-            self.obj = obj
-            self.count = count
+
     location = tuple()
     strength = int()
     game_map = dict()
@@ -103,8 +99,6 @@ class Dcrawler(BaseAgent):
                 else:
                     return_value = obj.delta - utils.tile_cost[self.game_map[loc]]
         else:
-            # print("%%%%%%%%%%%%%",loc)
-            # print("%%%%%%%%%%", self.game_map.shape)
             return_value= -utils.tile_cost[self.game_map[loc]]
         return return_value
 
@@ -123,22 +117,18 @@ class Dcrawler(BaseAgent):
         if x-1 >= 0 and self.game_map[x-1][y] != utils.MapTiles.W:
             loc = (x-1, y)
             movable[utils.Directions.N] = self.score(loc)
-            self.explored[loc] =  Dcrawler.ExploredStates(self.game_map[loc], self.map_objects[loc] if (loc in self.map_objects) else None, 0)
         # East Neighbor
         if y+1 <= maxlen - 1 and self.game_map[x][y+1] != utils.MapTiles.W:
             loc = (x, y+1)
             movable[utils.Directions.E] = self.score(loc)
-            self.explored[loc] =  Dcrawler.ExploredStates(self.game_map[loc], self.map_objects[loc] if (loc in self.map_objects) else None, 0)
         # South Neighbor
         if x+1 <= maxlen - 1 and self.game_map[x+1][y] != utils.MapTiles.W:
             loc = (x+1, y)
             movable[utils.Directions.S] = self.score(loc)
-            self.explored[loc] =  Dcrawler.ExploredStates(self.game_map[loc], self.map_objects[loc] if loc in self.map_objects else None, 0)
         # West Neighbor
         if y-1 >= 0 and self.game_map[x][y-1] != utils.MapTiles.W:
             loc = (x, y-1)
             movable[utils.Directions.W] = self.score(loc)
-            self.explored[loc] = Dcrawler.ExploredStates(self.game_map[loc], self.map_objects[loc] if loc in self.map_objects else None, 0)
 
         return movable
 
@@ -150,10 +140,6 @@ class Dcrawler(BaseAgent):
         self.map_objects = map_objects
 
         movable = self.get_movable()
-        if location in self.explored:
-            self.explored[location].count+=1
-        else:
-            self.explored[location] = Dcrawler.ExploredStates(game_map[location], map_objects[location] if (location in map_objects) else None, 0)
         dir = max(movable, key = lambda k :movable[k])
 
         return dir
