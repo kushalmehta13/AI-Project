@@ -1,6 +1,8 @@
 import numpy as np
+import math
 #from utils import Directions, MapTiles, MapObject, PowerUp, StaticMonster, MapTiles, tile_cost
 import utils
+import astar
 
 # import MEHTA_hw4
 
@@ -64,27 +66,50 @@ class RandomAgent(BaseAgent):
         direction: Directions
             Which direction to move
         """
-        return np.random.choice(list(Directions))
+        return np.random.choice(list(utils.Directions))
 
 class Dcrawler(BaseAgent):
 
-    location = tuple()
-    strength = int()
-    game_map = dict()
-    map_objects = dict()
-    explored = dict()
+
+
     def __init__(self, name='dcrawler'):
-        location = tuple()
+
+        self.location = tuple()
+        self.strength = int()
+        self.game_map = None
+        self.map_objects = dict()
+        self.explored = dict()
+        self.bufferd_steps = []
+        self.iterator = 0
+
         return super().__init__(name=name)
-    #
-    # def chooseBestTile(self, movable):
-    #     # objs[0] is game_map
-    #     # objs[1] is map_objects
-    #     for dir, objs in movable:
-    #
-    #     return
+
+    def getLocation(self, dir, location):
+        dir_location = {utils.Directions.NORTH:(-1,0), utils.Directions.SOUTH:(1,0), utils.Directions.EAST:(0,1), utils.Directions.WEST:(0,-1)}
+        x_add, y_add = dir_location[dir]
+        new_loc = (location[0]+ x_add, location[1]+y_add)
+        return new_loc
+
+
+    def reachDestination(self, start, destination):
+        map_mat = []
+
+        for i in range(len(self.game_map)):
+            map_mat.append([])
+            for j in range(len(self.game_map[i])):
+                if self.game_map[i][j] != utils.MapTiles.W and  self.game_map[i][j] != utils.MapTiles.U:
+                    map_mat[i].append(-self.score((i,j)))
+                else:
+                    map_mat[i].append(math.inf)
+
+        bufferd_steps = astar.solve(start, destination, map_mat)
 
     def score(self, loc):
+        """
+        returns the final deduction or addition in the agents strength after moving to the tile
+        :param loc:
+        :return:
+        """
         return_value = 0
         #tc = self.game_map[loc]
 
@@ -92,15 +117,22 @@ class Dcrawler(BaseAgent):
             obj = self.map_objects[loc]
             if isinstance(obj, utils.PowerUp):
                 return_value =  obj.delta - utils.tile_cost[self.game_map[loc]]
-            elif isinstance(obj, utils.StaticMonster)   :
+            elif isinstance(obj, utils.StaticMonster):
                 win_chance = (self.strength - utils.tile_cost[self.game_map[loc]])/((self.strength - utils.tile_cost[self.game_map[loc]]) + obj.strength)
-                if(win_chance > 0.5):
+                if(win_chance >= 0.5):
                     return_value = obj.strength - utils.tile_cost[self.game_map[loc]]
+
                 else:
                     return_value = obj.delta - utils.tile_cost[self.game_map[loc]]
         else:
             return_value= -utils.tile_cost[self.game_map[loc]]
         return return_value
+
+    def add_to_explored(self, location):
+        if location in self.explored:
+            self.explored[location] += 1
+        else:
+            self.explored[location] = 1
 
     def get_movable(self):
         '''
@@ -112,7 +144,6 @@ class Dcrawler(BaseAgent):
         y = self.location[1]
         movable = dict()
         maxlen = len(self.game_map)
-        print(self.game_map[x-1][y])
         # North Neighbor
         if x-1 >= 0 and self.game_map[x-1][y] != utils.MapTiles.W:
             loc = (x-1, y)
@@ -132,15 +163,45 @@ class Dcrawler(BaseAgent):
 
         return movable
 
+    def decisionMaker(self, movable):
+        movable_count = dict()
+
+        #finding the count of each movable
+        for dir in movable:
+            new_loc = self.getLocation(dir, self.location)
+            if new_loc in self.explored:
+                movable_count[dir] = self.explored[new_loc]
+            else:
+                movable_count[dir] = 0
+
+        dir = min(movable_count, key = lambda k : movable_count[k])
+        min_count = movable_count[dir]
+        less_explored = []
+
+        #finding min count
+        for move in movable_count:
+            if movable_count[move] == min_count:
+                less_explored.append(move)
+
+        #print("less Explored", less_explored)
+        #print("movable", movable)
+        #finding best score for the same count:
+        dir = max(less_explored, key = lambda k: movable[k])
+
+        return dir
 
     def step(self, location, strength, game_map, map_objects):
         self.location = location
         self.strength = strength
         self.game_map = game_map
-        self.map_objects = map_objects
-
+        self.map_objects = {**self.map_objects, **map_objects} #for storing all the objects seen so far
+        #print(map_objects)
         movable = self.get_movable()
-        dir = max(movable, key = lambda k :movable[k])
+        self.add_to_explored(location)
+        dir = self.decisionMaker(movable)
+        new_loc = self.getLocation(dir, location)
+        if new_loc in map_objects:
+            del self.map_objects[new_loc]
 
         return dir
         """
