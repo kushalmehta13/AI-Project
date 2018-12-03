@@ -6,12 +6,12 @@ import numpy as np
 
 import utils
 from agent import BaseAgent
+from util_functions import print_map
 
 
 class GameDriver(object):
     """
     Game driver implementing the whole game logic
-
     Parameters
     ----------
     height: int
@@ -26,15 +26,19 @@ class GameDriver(object):
         A list of agents
     initial_strength: int
         Initial strength of each agent
+    show_map: bool
+        Whether to show the map at each step of the game
+    map_type: str
+        Map type to use. Choices are {ascii, emoji}
     save_dir: str
         Directory in which to save the generated map
     map_file: (optional) str
         Map (JSON) file to load the game map
-
     """
 
     def __init__(self, height, width, num_powerups, num_monsters, agents,
-                 initial_strength, save_dir=None, map_file=None):
+                 initial_strength, show_map, map_type,
+                 save_dir=None, map_file=None):
         assert (num_monsters + num_powerups + 1) <= height * width, \
             'Number of objects in the map should be less than the number of ' \
             'tiles in the map'
@@ -60,6 +64,8 @@ class GameDriver(object):
         self.agent_max_strengths = [initial_strength] * len(agents)
 
         self.map_file = map_file
+        self.show_map = show_map
+        self.map_type = map_type
 
         print('Initializing the game')
         self.initialize_game()
@@ -79,8 +85,6 @@ class GameDriver(object):
 
             # update map for agents
             for i, j in product(*[[-1, 0, 1]] * 2):
-                if (i, j) == (0, 0):
-                    continue
                 new_i = current_loc[0] + i
                 new_j = current_loc[1] + j
 
@@ -91,6 +95,9 @@ class GameDriver(object):
                 if (new_i, new_j) in self.objects:
                     self.agent_objects[idx][(new_i, new_j)] = \
                         self.objects[(new_i, new_j)]
+
+            if self.show_map:
+                print_map(self.agent_maps[idx], self.map_type)
 
             direction = agent.step(
                 location=self.agent_locations[idx],
@@ -140,8 +147,8 @@ class GameDriver(object):
                 elif isinstance(self.objects[final_loc], utils.StaticMonster):
                     # fight
                     win_chance = self.agent_strengths[idx] / \
-                        (self.agent_strengths[idx] +
-                         self.objects[final_loc].strength)
+                                 (self.agent_strengths[idx] +
+                                  self.objects[final_loc].strength)
                     if np.random.random() < win_chance:
                         # agent wins
                         if verbose:
@@ -150,7 +157,7 @@ class GameDriver(object):
                                 self.objects[final_loc].label))
                         self.agent_max_strengths[idx] += \
                             self.objects[final_loc].strength
-                        self.agent_strengths[idx] = self.agent_strengths[idx]
+                        self.agent_strengths[idx] = self.agent_max_strengths[idx]
                         del self.objects[final_loc]
                         for i in range(len(self.agents)):
                             if final_loc in self.agent_objects[i]:
@@ -238,7 +245,6 @@ class GameDriver(object):
         """
         Save the game map in a JSON file named `map.json` in the given
         directory
-
         Parameters
         ----------
         save_dir: str
@@ -263,7 +269,6 @@ class GameDriver(object):
     def load_map(self, map_file):
         """
         Load a previously saved game map.
-
         Parameters
         ----------
         map_file: str

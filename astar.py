@@ -6,8 +6,9 @@ References:
 '''
 
 
-
+import math
 import heapq
+import agent
 
 class Node():
     '''
@@ -60,23 +61,6 @@ def get_relative_neighbors():
     :return: List of tuples. Tuples contain all possible values that can be used to generate children
     '''
     return [(0,1),(1,0),(0,-1),(-1,0)]
-
-
-def distance_matrixify(mat):
-    '''
-
-    :param mat: 2D list. Eg: [[p, p, p], [p, m ,p], [s, s, m]]
-    :return: A 2D list populated with the corresponding path cost
-    '''
-    for i in range(len(mat)):
-        for j in range(len(mat)):
-            if mat[i][j] == 'p':
-                mat[i][j] = 10
-            elif mat[i][j] == 'm':
-                mat[i][j] = 100
-            elif mat[i][j] == 's':
-                mat[i][j] = 30
-    return mat
 
 
 def getCost(path, d_matrix):
@@ -153,7 +137,7 @@ def solve(start, goal, mat):
 
     if start[0] > -1 and start[0] < len(mat) and goal[0] > -1 and goal [0] < len(mat) and start[1] > -1 and start[1] < len(mat) and goal[1] > -1 and goal[1] < len(mat):
         # Replace the matrix in place with the corresponding path costs
-        d_matrix = distance_matrixify(mat)
+
 
         # Initialize start node
         start_node = Node(None, start)
@@ -161,7 +145,7 @@ def solve(start, goal, mat):
 
         # Initialize goal node (End node)
         end_node = Node(Node, goal)
-        end_node.g = d_matrix[goal[0]][goal[1]]
+        end_node.g = mat[goal[0]][goal[1]]
         end_node.h = 0
         end_node.f = end_node.g + end_node.h
 
@@ -184,7 +168,7 @@ def solve(start, goal, mat):
 
             # Check if current node is goal node
             if n[1] == end_node:
-                direction = backtrack(n, d_matrix)
+                direction = backtrack(n, mat)
                 return direction
 
             # Calculate the locations of the neighbors / children of the current node
@@ -205,7 +189,7 @@ def solve(start, goal, mat):
                     continue
 
                 # Set the path cost, heuristic and the total cost f for the child
-                set_ghf(child,goal,d_matrix,n)
+                set_ghf(child,goal,mat,n)
 
                 # if child location is in the frontier and if its cost is lower than the one in the frontier,
                 # replace the frontier node with the current child
