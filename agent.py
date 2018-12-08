@@ -183,7 +183,8 @@ class DcrawlerAgent(BaseAgent):
         :return: integer specifiying the total strength gain/loss of the agent, if it was to step on the tile
         """
         return_value = 0
-
+        # if there is an object in the specified location then calculate score of
+        # the tile with respect to the object
         if loc in self.map_objects:
             obj = self.map_objects[loc]
             if isinstance(obj, utils.PowerUp):
@@ -194,6 +195,7 @@ class DcrawlerAgent(BaseAgent):
                     return_value = obj.strength - utils.tile_cost[self.game_map[loc]]
                 else:
                     return_value = obj.delta - utils.tile_cost[self.game_map[loc]]
+        # Else, the score will be the negative of the tile cost of the object
         else:
             return_value= -utils.tile_cost[self.game_map[loc]]
 
@@ -251,7 +253,7 @@ class DcrawlerAgent(BaseAgent):
         """
         movable_count = dict()
 
-        #finding the count of each possible direction from the current location
+        # finding the count of each possible direction from the current location
         for dir in movable:
             new_loc = self.get_location(dir, self.location)
             if new_loc in self.explored:
@@ -259,17 +261,17 @@ class DcrawlerAgent(BaseAgent):
             else:
                 movable_count[dir] = 0
 
-        #finding the direction with minimum count
+        # finding the direction with minimum count
         dir = min(movable_count, key = lambda k : movable_count[k])
         min_count = movable_count[dir]
         less_explored = []
 
-        #finding direction with same count as min count
+        # finding direction with same count as min count
         for move in movable_count:
             if movable_count[move] == min_count:
                 less_explored.append(move)
 
-        #finding the direction that has highest score among the minimum count locations.
+        # finding the direction that has highest score among the minimum count locations.
         dir = max(less_explored, key = lambda k: movable[k])
 
         return dir
@@ -279,21 +281,13 @@ class DcrawlerAgent(BaseAgent):
         self.strength = strength
         self.game_map = game_map
 
-        #for storing all the objects seen so far this will help agents to comeback to unconsumed objects later in the game
-        self.map_objects = {**self.map_objects, **map_objects}
-
-        #adding current locations to explored with count = 1
+        # adding current locations to explored with count = 1
         self.add_to_explored(location)
 
-        #finding the possible movable directions from current location
+        # finding the possible movable directions from current location
         movable = self.get_movable()
 
-        #finding the best direction among the movable directions found above
+        # finding the best direction among the movable directions found above
         dir = self.decision_maker(movable)
-
-        #removing the consumed objects from the object map
-        new_loc = self.get_location(dir, location)
-        if new_loc in map_objects:
-            del self.map_objects[new_loc]
 
         return dir
