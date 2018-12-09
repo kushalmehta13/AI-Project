@@ -161,6 +161,18 @@ class DcrawlerAgent(BaseAgent):
             self.game_map = None #for storing the game map
             self.map_objects = dict() # for keeping track of map_objects
             self.explored = dict() # for keeping track of explored states
+            #self.update_boundaries_explored()
+            self.moves_list = []
+
+
+    def update_boundaries_explored(self):
+        for i in range(self.height):
+            self.explored[(i, 0)] = 1
+            self.explored[(i, self.width-1)] = 1
+        for i in range(self.width):
+            self.explored[(0,i)] = 1
+            self.explored[(self.height-1), i] = 1
+
 
 
     def get_location(self, dir, location):
@@ -176,7 +188,7 @@ class DcrawlerAgent(BaseAgent):
         new_loc = (location[0]+ x_incr, location[1]+y_incr)
         return new_loc
 
-    def score(self, loc):
+    def score(self, loc, curr_strength):
         """
         calculates score for each tile based on what is present on the tile.
         :param loc: location of the tile
@@ -190,9 +202,9 @@ class DcrawlerAgent(BaseAgent):
             if isinstance(obj, utils.PowerUp):
                 return_value =  obj.delta - utils.tile_cost[self.game_map[loc]]
             elif isinstance(obj, utils.StaticMonster):
-                win_chance = (self.strength - utils.tile_cost[self.game_map[loc]])/((self.strength - utils.tile_cost[self.game_map[loc]]) + obj.strength)
+                win_chance = (curr_strength - utils.tile_cost[self.game_map[loc]])/((curr_strength - utils.tile_cost[self.game_map[loc]]) + obj.strength)
                 if(win_chance >= 0.5): # if win chance is 50% or more then the agent should fight
-                    return_value = obj.strength - utils.tile_cost[self.game_map[loc]]
+                    return_value = obj.strength #- utils.tile_cost[self.game_map[loc]]
                 else:
                     return_value = obj.delta - utils.tile_cost[self.game_map[loc]]
         # Else, the score will be the negative of the tile cost of the object
@@ -213,6 +225,73 @@ class DcrawlerAgent(BaseAgent):
         else:
             self.explored[location] = 1
 
+    def get_diagonal_decision(self):
+
+        x = self.location[0]
+        y = self.location[1]
+        diagonal = dict()
+        maxlen = len(self.game_map)
+
+        # NorthEast  Neighbor
+        if x-1 >= 0 and y+1 <= maxlen-1  and self.game_map[x-1][y+1] != utils.MapTiles.W and \
+                self.game_map[x-1][y] != utils.MapTiles.W and self.game_map[x][y+1] != utils.MapTiles.W and ((x-1),(y+1)) in self.map_objects:
+            n = (x-1, y)
+            e = (x, y+1)
+            target_ne = (x-1, y+1)
+            e_score = self.score(e, self.strength)+self.score(target_ne, self.strength+self.score(e, self.strength))
+            n_score = self.score(n, self.strength)+self.score(target_ne, self.strength+self.score(n, self.strength))
+
+            if e_score > n_score:
+                diagonal['EN'] = e_score
+            else:
+                diagonal['NE'] = n_score
+        # NorthWest
+        if x-1 >= 0 and y-1 >=0 and self.game_map[x-1][y-1] != utils.MapTiles.W and \
+                self.game_map[x-1][y] != utils.MapTiles.W and self.game_map[x][y-1] != utils.MapTiles.W and ((x-1), (y-1)) in self.map_objects:
+            n = (x-1, y)
+            w = (x, y-1)
+            target_nw = (x-1, y-1)
+
+            n_score = self.score(n, self.strength)+self.score(target_nw, self.strength+self.score(n, self.strength))
+            w_score = self.score(w, self.strength)+self.score(target_nw, self.strength+self.score(w, self.strength))
+
+            if n_score > w_score:
+                diagonal['NW'] = n_score
+            else:
+                diagonal['WN'] = w_score
+        # SouthEast
+        if x+1 <= maxlen - 1 and y+1 <= maxlen-1 and self.game_map[x+1][y+1] != utils.MapTiles.W and \
+                self.game_map[x+1][y] != utils.MapTiles.W and self.game_map[x][y+1] != utils.MapTiles.W and ((x+1), (y+1)) in self.map_objects:
+
+            s = (x+1, y)
+            e = (x, y+1)
+            target_se = (x+1, y+1)
+
+            s_score = self.score(s, self.strength)+self.score(target_se, self.strength + self.score(s, self.strength))
+            e_score = self.score(e, self.strength)+self.score(target_se, self.strength + self.score(s, self.strength))
+
+            if s_score > e_score:
+                diagonal['SE'] = s_score
+            else:
+                diagonal['ES'] = e_score
+
+        # SouthWest Neighbor
+        if x+1 <= maxlen - 1 and y-1 >= 0 and self.game_map[x+1][y-1] != utils.MapTiles.W and \
+                self.game_map[x+1][y] != utils.MapTiles.W and self.game_map[x][y-1] != utils.MapTiles.W and ((x+1), (y-1)) in self.map_objects:
+
+            s = (x+1, y)
+            w = (x, y-1)
+            target_sw = (x+1, y-1)
+            s_score = self.score(s, self.strength)+self.score(target_sw, self.strength - self.score(s, self.strength))
+            w_score = self.score(w, self.strength)+self.score(target_sw, self.strength - self.score(s, self.strength))
+
+            if s_score > w_score:
+                diagonal['SW'] = s_score
+            else:
+                diagonal['WS'] = w_score
+
+
+        return diagonal
 
     def get_movable(self):
         """
@@ -229,19 +308,19 @@ class DcrawlerAgent(BaseAgent):
         # North Neighbor
         if x-1 >= 0 and self.game_map[x-1][y] != utils.MapTiles.W:
             loc = (x-1, y)
-            movable[utils.Directions.N] = self.score(loc)
+            movable[utils.Directions.N] = self.score(loc, self.strength)
         # East Neighbor
         if y+1 <= maxlen - 1 and self.game_map[x][y+1] != utils.MapTiles.W:
             loc = (x, y+1)
-            movable[utils.Directions.E] = self.score(loc)
+            movable[utils.Directions.E] = self.score(loc, self.strength)
         # South Neighbor
         if x+1 <= maxlen - 1 and self.game_map[x+1][y] != utils.MapTiles.W:
             loc = (x+1, y)
-            movable[utils.Directions.S] = self.score(loc)
+            movable[utils.Directions.S] = self.score(loc, self.strength)
         # West Neighbor
         if y-1 >= 0 and self.game_map[x][y-1] != utils.MapTiles.W:
             loc = (x, y-1)
-            movable[utils.Directions.W] = self.score(loc)
+            movable[utils.Directions.W] = self.score(loc, self.strength)
 
         return movable
 
@@ -252,6 +331,8 @@ class DcrawlerAgent(BaseAgent):
         :return: returns the best direction that is less visited and has highest score value.
         """
         movable_count = dict()
+        if len(self.moves_list) > 0:
+            return self.moves_list.pop()
 
         # finding the count of each possible direction from the current location
         for dir in movable:
@@ -268,26 +349,48 @@ class DcrawlerAgent(BaseAgent):
 
         # finding direction with same count as min count
         for move in movable_count:
+
             if movable_count[move] == min_count:
                 less_explored.append(move)
-
         # finding the direction that has highest score among the minimum count locations.
         dir = max(less_explored, key = lambda k: movable[k])
 
+        diagonal = dict()
+        diagonal = self.get_diagonal_decision()
+        if len(diagonal)>0:
+            diag_dir = max(diagonal.keys(), key = lambda k: diagonal[k])
+            if movable[dir] > diagonal[diag_dir]:
+                return dir
+            else:
+                diag1 = self.convert_string_to_util(diag_dir[0])
+                diag2 = self.convert_string_to_util(diag_dir[1])
+                self.moves_list.append(diag2)
+                self.moves_list.append(diag1)
+                return self.moves_list.pop()
         return dir
+
+    def convert_string_to_util(self, str):
+        if str=='N':
+            return utils.Directions.N
+        elif str=='S':
+            return utils.Directions.S
+        elif str=='E':
+            return utils.Directions.E
+        elif str=='W':
+            return utils.Directions.W
 
     def step(self, location, strength, game_map, map_objects):
         self.location = location
         self.strength = strength
         self.game_map = game_map
-
+        self.map_objects = map_objects
         # adding current locations to explored with count = 1
         self.add_to_explored(location)
-
         # finding the possible movable directions from current location
         movable = self.get_movable()
-
         # finding the best direction among the movable directions found above
         dir = self.decision_maker(movable)
-
         return dir
+
+
+
