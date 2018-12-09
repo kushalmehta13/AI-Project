@@ -230,10 +230,9 @@ class DcrawlerAgent(BaseAgent):
         x = self.location[0]
         y = self.location[1]
         diagonal = dict()
-        maxlen = len(self.game_map)
 
         # NorthEast  Neighbor
-        if x-1 >= 0 and y+1 <= maxlen-1  and self.game_map[x-1][y+1] != utils.MapTiles.W and \
+        if x-1 >= 0 and y+1 <= self.width-1  and self.game_map[x-1][y+1] != utils.MapTiles.W and \
                 self.game_map[x-1][y] != utils.MapTiles.W and self.game_map[x][y+1] != utils.MapTiles.W and ((x-1),(y+1)) in self.map_objects:
             n = (x-1, y)
             e = (x, y+1)
@@ -260,7 +259,7 @@ class DcrawlerAgent(BaseAgent):
             else:
                 diagonal['WN'] = w_score
         # SouthEast
-        if x+1 <= maxlen - 1 and y+1 <= maxlen-1 and self.game_map[x+1][y+1] != utils.MapTiles.W and \
+        if x+1 <= self.height - 1 and y+1 <= self.width-1 and self.game_map[x+1][y+1] != utils.MapTiles.W and \
                 self.game_map[x+1][y] != utils.MapTiles.W and self.game_map[x][y+1] != utils.MapTiles.W and ((x+1), (y+1)) in self.map_objects:
 
             s = (x+1, y)
@@ -276,7 +275,7 @@ class DcrawlerAgent(BaseAgent):
                 diagonal['ES'] = e_score
 
         # SouthWest Neighbor
-        if x+1 <= maxlen - 1 and y-1 >= 0 and self.game_map[x+1][y-1] != utils.MapTiles.W and \
+        if x+1 <= self.height - 1 and y-1 >= 0 and self.game_map[x+1][y-1] != utils.MapTiles.W and \
                 self.game_map[x+1][y] != utils.MapTiles.W and self.game_map[x][y-1] != utils.MapTiles.W and ((x+1), (y-1)) in self.map_objects:
 
             s = (x+1, y)
@@ -310,11 +309,11 @@ class DcrawlerAgent(BaseAgent):
             loc = (x-1, y)
             movable[utils.Directions.N] = self.score(loc, self.strength)
         # East Neighbor
-        if y+1 <= maxlen - 1 and self.game_map[x][y+1] != utils.MapTiles.W:
+        if y+1 <= self.width - 1 and self.game_map[x][y+1] != utils.MapTiles.W:
             loc = (x, y+1)
             movable[utils.Directions.E] = self.score(loc, self.strength)
         # South Neighbor
-        if x+1 <= maxlen - 1 and self.game_map[x+1][y] != utils.MapTiles.W:
+        if x+1 <= self.height - 1 and self.game_map[x+1][y] != utils.MapTiles.W:
             loc = (x+1, y)
             movable[utils.Directions.S] = self.score(loc, self.strength)
         # West Neighbor
