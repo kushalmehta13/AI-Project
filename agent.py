@@ -1,18 +1,12 @@
 import numpy as np
 from utils import Directions
 import util_functions as uf
-import utils
-import math
-import util_functions
-"""
-Team Name: DCRAWLER
-Team Member: Ajay Pal, Rohan Gujarathi, Kushal Mehta, Rishab Sachdeva
-Class Name: DecrawlerAgent
-"""
+
 class BaseAgent(object):
     def __init__(self, height, width, initial_strength, name='base_agent'):
         """
         Base class for a game agent
+
         Parameters
         ----------
         height: int
@@ -31,6 +25,7 @@ class BaseAgent(object):
 
     def step(self, location, strength, game_map, map_objects):
         """
+
         Parameters
         ----------
         location: tuple of int
@@ -41,6 +36,8 @@ class BaseAgent(object):
             Map of the game as observed by the agent so far
         map_objects: dict
             Objects discovered by the agent so far
+
+
         Returns
         -------
         direction: Directions
@@ -52,6 +49,7 @@ class BaseAgent(object):
 class RandomAgent(BaseAgent):
     """
     A random agent that moves in each direction randomly
+
     Parameters
     ----------
     height: int
@@ -72,6 +70,7 @@ class RandomAgent(BaseAgent):
         """
         Implementation of a random agent that at each step randomly moves in
         one of the four directions
+
         Parameters
         ----------
         location: tuple of int
@@ -82,6 +81,7 @@ class RandomAgent(BaseAgent):
             Map of the game as observed by the agent so far
         map_objects: dict
             Objects discovered by the agent so far
+
         Returns
         -------
         direction: Directions
@@ -94,6 +94,7 @@ class HumanAgent(BaseAgent):
     """
     A human agent that that can be controlled by the user. At each time step
     the agent will prompt for an input from the user.
+
     Parameters
     ----------
     height: int
@@ -114,6 +115,7 @@ class HumanAgent(BaseAgent):
         """
         Implementation of an agent that at each step asks the user
         what to do
+
         Parameters
         ----------
         location: tuple of int
@@ -124,6 +126,7 @@ class HumanAgent(BaseAgent):
             Map of the game as observed by the agent so far
         map_objects: dict
             Objects discovered by the agent so far
+
         Returns
         -------
         direction: Directions
@@ -141,6 +144,21 @@ class HumanAgent(BaseAgent):
         return dir_dict[dirchar]
 
 
+
+"""Do not remove this import"""
+import utils
+"""
+###############################################################################
+###############################################################################
+##                                                                           ##
+##   Implementation Class Name: DcrawlerAgent                                ##
+##   Team Name: Dcrawler Agent                                               ##
+##   Team Members - Ajay Pal, Rohan Gujarathi, Kushal Mehta, Rishab Sachdeva ##
+##                                                                           ##
+###############################################################################
+###############################################################################
+"""
+
 class DcrawlerAgent(BaseAgent):
     """
    A Dcrawler agent that moves in each direction based on score value of each options
@@ -155,14 +173,15 @@ class DcrawlerAgent(BaseAgent):
        Name of the agent
    """
 
-    def __init__(self, height, width, initial_strength, name='decrawler_agent'):
-            super().__init__(height=height, width=width,initial_strength=initial_strength, name=name)
-            self.location = tuple() # for storing the current location
-            self.game_map = None #for storing the game map
-            self.map_objects = dict() # for keeping track of map_objects
-            self.explored = dict() # for keeping track of explored states
-            #self.update_boundaries_explored()
-            self.moves_list = []
+
+    def __init__(self, height, width, initial_strength, name='decrawler'):
+        super().__init__(height=height, width=width,initial_strength=initial_strength, name=name)
+        self.location = tuple() # for storing the current location
+        self.game_map = None #for storing the game map
+        self.map_objects = dict() # for keeping track of map_objects
+        self.explored = dict() # for keeping track of explored states
+        #self.update_boundaries_explored()
+        self.moves_list = []
 
 
     def update_boundaries_explored(self):
@@ -390,6 +409,3 @@ class DcrawlerAgent(BaseAgent):
         # finding the best direction among the movable directions found above
         dir = self.decision_maker(movable)
         return dir
-
-
-

@@ -44,6 +44,20 @@ def map_to_text(game_map, type='a'):
 
     return printable_map
 
+#
+# def print_map(game_map, type='ascii'):
+#     """
+#     Takes a game map populated with map values, prints that map to terminal.
+#     Can optionally take an argument specifying the type of character printed
+#     (ascii, emoji, colorascii, or unicode).
+#     """
+#     printable_map = map_to_text(game_map, type)
+#     for i in range(len(game_map)):
+#         row = ""
+#         for j in range(len(game_map[i])):
+#             row += printable_map[i][j]
+#             row += ' '
+#         print(row)
 
 def print_map(game_map, type='ascii'):
     """
@@ -52,8 +66,12 @@ def print_map(game_map, type='ascii'):
     (ascii, emoji, colorascii, or unicode).
     """
     printable_map = map_to_text(game_map, type)
+    row ="  "
     for i in range(len(game_map)):
-        row = ""
+        row+=str(i)+' '
+    print(row)
+    for i in range(len(game_map)):
+        row = str(i)+" "
         for j in range(len(game_map[i])):
             row += printable_map[i][j]
             row += ' '
