@@ -1,3 +1,7 @@
+
+Collabarators: Ajay Pal, Rishabh Sachdeva, Rohan Gujarathi and Kushal Mehta
+
+
 # CMSC 671 (Fall 2018) Final project
 
 Code for the final project of CMSC 671 course (Fall 2018)
