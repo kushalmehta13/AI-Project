@@ -1,5 +1,5 @@
 
-Collabarators: Ajay Pal, Rishabh Sachdeva, Rohan Gujarathi and Kushal Mehta
+## Collaborators: Ajay Pal, Rishabh Sachdeva, Rohan Gujarathi and Kushal Mehta
 
 
 # CMSC 671 (Fall 2018) Final project
